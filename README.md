@@ -1,56 +1,150 @@
-Mint Classics Company: Inventory Optimization Project
-Overview
-This project involves analyzing inventory and sales data for Mint Classics Company, a retailer of classic model cars and other vehicles. The goal is to identify opportunities for inventory reduction and reorganization, with the aim of closing one of the company's storage facilities while maintaining efficient customer service.
-
-Project Objectives
-Explore Products in Inventory: Analyze current inventory levels and storage locations.
-
-Identify Factors Influencing Inventory Reorganization: Determine key factors such as sales performance, storage utilization, and product demand.
-
-Provide Data-Driven Recommendations: Suggest actionable steps for reducing inventory and reorganizing storage.
-
-Tools and Technologies Used
-MySQL Workbench: For querying and analyzing the database.
-
-SQL: For writing queries to extract insights from the data.
-
-GitHub: For version control and sharing the project.
+-- Mint Classics Company (EDA) Project by Frakhod 
 
 
-Key Insights
-Underutilized Warehouses: Some warehouses (e.g., warehouseCode G) have low inventory levels and can be consolidated.
+-- List All Products and Their Warehouse Locations
 
-Overstocked Products: Products like productCode Y and productCode K have high inventory but low sales.
+SELECT 
+    p.productCode,
+    p.productName,
+    p.quantityInStock,
+    w.warehouseCode,
+    w.warehouseName
+FROM 
+    products p
+JOIN 
+    warehouses w ON p.warehouseCode = w.warehouseCode;
+ 
+    
+    -- Identify Underutilized Warehouses
+    
+    
+    SELECT 
+    w.warehouseCode,
+    w.warehouseName,
+    SUM(p.quantityInStock) AS totalInventory
+FROM 
+    products p
+JOIN 
+    warehouses w ON p.warehouseCode = w.warehouseCode
+GROUP BY 
+    w.warehouseCode, w.warehouseName
+ORDER BY 
+    totalInventory ASC;
+    
+    
+    -- Compare Inventory Levels with Sales
+    
+    SELECT 
+    p.productCode,
+    p.productName,
+    SUM(od.quantityOrdered) AS totalSold,
+    p.quantityInStock AS currentInventory
+FROM 
+    products p
+JOIN 
+    orderdetails od ON p.productCode = od.productCode
+GROUP BY 
+    p.productCode, p.productName, p.quantityInStock
+ORDER BY 
+    totalSold DESC;
+    
+    
+    -- Slow-Moving or Non-Moving Products
+    
+    SELECT 
+    p.productCode,
+    p.productName,
+    SUM(od.quantityOrdered) AS totalSold,
+    p.quantityInStock AS currentInventory
+FROM 
+    products p
+LEFT JOIN 
+    orderdetails od ON p.productCode = od.productCode
+GROUP BY 
+    p.productCode, p.productName, p.quantityInStock
+HAVING 
+    totalSold IS NULL OR totalSold = 0
+ORDER BY 
+    currentInventory DESC;
+    
+    -- Inventory Turnover Ratio; This query calculates the inventory turnover ratio, 
+    -- which measures how quickly inventory is sold and replaced.
+    
+    SELECT 
+    p.productCode,
+    p.productName,
+    SUM(od.quantityOrdered) AS totalSold,
+    p.quantityInStock AS currentInventory,
+    ROUND(SUM(od.quantityOrdered) / p.quantityInStock, 2) AS inventoryTurnoverRatio
+FROM 
+    products p
+JOIN 
+    orderdetails od ON p.productCode = od.productCode
+GROUP BY 
+    p.productCode, p.productName, p.quantityInStock
+ORDER BY 
+    inventoryTurnoverRatio ASC;
+    
+    
+    -- List Products with High Inventory but Low Sales
+    
+    
+    SELECT 
+    p.productCode,
+    p.productName,
+    p.quantityInStock AS currentInventory,
+    SUM(od.quantityOrdered) AS totalSold
+FROM 
+    products p
+LEFT JOIN 
+    orderdetails od ON p.productCode = od.productCode
+GROUP BY 
+    p.productCode, p.productName, p.quantityInStock
+HAVING 
+    totalSold < p.quantityInStock * 0.1  
+ORDER BY 
+    currentInventory DESC;
+    
+    
+    --  Consolidate Inventory for Potential Warehouse Closure
+    
+    
+    SELECT 
+    p.productCode,
+    p.productName,
+    p.quantityInStock,
+    w.warehouseName,
+    w2.warehouseName AS suggestedWarehouse
+FROM 
+    products p
+JOIN 
+    warehouses w ON p.warehouseCode = w.warehouseCode
+JOIN 
+    warehouses w2 ON w2.warehouseCode <> w.warehouseCode
+WHERE 
+    w.warehousePctCap < 50  
+    
+ORDER BY 
+    p.quantityInStock DESC;
+    
+    
 
-Slow-Moving Products: Products like productCode A and productCode B have no sales and should be discontinued.
-
-High-Selling Products: Products like productCode I and productCode J are top sellers and should be prioritized for inventory management.
-
-Recommendations
-Discontinue Slow-Moving Products: Free up storage space by discontinuing products with no sales.
-
-Reorganize Inventory: Consolidate inventory from underutilized warehouses into others.
-
-Optimize Stock Levels: Reduce inventory for overstocked products and increase inventory for high-selling products.
-
-Close Underutilized Warehouses: Close warehouses with low inventory levels (e.g., warehouseCode N).
+    -- Analyze Sales Data
+    
+    
+    SELECT p.productCode, p.productName, SUM(od.quantityOrdered) AS totalSold
+FROM products p
+JOIN orderdetails od ON p.productCode = od.productCode
+GROUP BY p.productCode, p.productName
+ORDER BY totalSold DESC;
 
 
-Key Insights
-Underutilized Warehouses: Some warehouses (e.g., warehouseCode G) have low inventory levels and can be consolidated.
+-- Storage Locations
 
-Overstocked Products: Products like productCode Y and productCode K have high inventory but low sales.
 
-Slow-Moving Products: Products like productCode A and productCode B have no sales and should be discontinued.
+SELECT warehouseCode, COUNT(productCode) AS numProducts, SUM(quantityInStock) AS totalInventory
+FROM products
+GROUP BY warehouseCode;
 
-High-Selling Products: Products like productCode I and productCode J are top sellers and should be prioritized for inventory management.
 
-Recommendations
-Discontinue Slow-Moving Products: Free up storage space by discontinuing products with no sales.
-
-Reorganize Inventory: Consolidate inventory from underutilized warehouses into others.
-
-Optimize Stock Levels: Reduce inventory for overstocked products and increase inventory for high-selling products.
-
-Close Underutilized Warehouses: Close warehouses with low inventory levels (e.g., warehouseCode N).
 
