@@ -36,3 +36,21 @@ Optimize Stock Levels: Reduce inventory for overstocked products and increase in
 Close Underutilized Warehouses: Close warehouses with low inventory levels (e.g., warehouseCode N).
 
 
+Key Insights
+Underutilized Warehouses: Some warehouses (e.g., warehouseCode G) have low inventory levels and can be consolidated.
+
+Overstocked Products: Products like productCode Y and productCode K have high inventory but low sales.
+
+Slow-Moving Products: Products like productCode A and productCode B have no sales and should be discontinued.
+
+High-Selling Products: Products like productCode I and productCode J are top sellers and should be prioritized for inventory management.
+
+Recommendations
+Discontinue Slow-Moving Products: Free up storage space by discontinuing products with no sales.
+
+Reorganize Inventory: Consolidate inventory from underutilized warehouses into others.
+
+Optimize Stock Levels: Reduce inventory for overstocked products and increase inventory for high-selling products.
+
+Close Underutilized Warehouses: Close warehouses with low inventory levels (e.g., warehouseCode N).
+
